@@ -2,7 +2,15 @@ package api
 
 import (
 	"fmt"
+	"strings"
 )
+
+// escapeQueryString escapes a value for embedding in a single-quoted string
+// literal inside an entity-search or NRQL query.
+func escapeQueryString(s string) string {
+	s = strings.ReplaceAll(s, `\`, `\\`)
+	return strings.ReplaceAll(s, `'`, `\'`)
+}
 
 // ResolveAppID resolves an application identifier to a numeric app ID.
 // It accepts:
@@ -32,7 +40,7 @@ func (c *Client) ResolveAppID(identifier string) (string, error) {
 // resolveAppName looks up an application by name and returns its ID
 func (c *Client) resolveAppName(name string) (string, error) {
 	// Search for APM applications with the exact name
-	query := fmt.Sprintf("name = '%s' AND domain = 'APM' AND type = 'APPLICATION'", name)
+	query := fmt.Sprintf("name = '%s' AND domain = 'APM' AND type = 'APPLICATION'", escapeQueryString(name))
 	entities, err := c.SearchEntities(query)
 	if err != nil {
 		return "", fmt.Errorf("failed to search for application: %w", err)
